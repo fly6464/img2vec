@@ -21,7 +21,8 @@ class Img2Vec():
 
         self.model.eval()
 
-        self.scaler = transforms.Scale((224, 224))
+        self.scaler = transforms.Scale((256, 256))
+        self.crop = transforms.CenterCrop((224, 224))
         self.normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
                                               std=[0.229, 0.224, 0.225])
         self.to_tensor = transforms.ToTensor()
@@ -32,8 +33,7 @@ class Img2Vec():
         :param tensor: If True, get_vec will return a FloatTensor instead of Numpy array
         :returns: Numpy ndarray
         """
-        image = self.normalize(self.to_tensor(self.scaler(img))).unsqueeze(0).to(self.device)
-
+        image = self.normalize(self.to_tensor(self.crop(self.scaler(img)))).unsqueeze(0).to(self.device)
         my_embedding = torch.zeros(1, self.layer_output_size, 1, 1)
 
         def copy_data(m, i, o):
@@ -64,6 +64,24 @@ class Img2Vec():
 
             return model, layer
 
+        elif model_name == 'resnet-152':
+            model = models.resnet152(pretrained=True)
+            if layer == 'default':
+                layer = model._modules.get('avgpool')
+                self.layer_output_size = 2048
+            else:
+                layer =  model._modules.get(layer)
+
+            return model, layer
+        elif model_name == 'resnet-101':
+            model = models.resnet101(pretrained=True)
+            if layer == 'default':
+                layer = model._modules.get('avgpool')
+                self.layer_output_size = 2048
+            else:
+                layer =  model._modules.get(layer)
+
+            return model, layer
         elif model_name == 'alexnet':
             model = models.alexnet(pretrained=True)
             if layer == 'default':

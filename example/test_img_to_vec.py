@@ -8,7 +8,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 
 input_path = './test_images'
 
-img2vec = Img2Vec()
+img2vec = Img2Vec(cuda=True, model='resnet-152')
 
 # For each test image, we store the filename and vector as key, value in a dictionary
 pics = {}
@@ -17,7 +17,7 @@ for file in os.listdir(input_path):
     img = Image.open(os.path.join(input_path, filename))
     vec = img2vec.get_vec(img)
     pics[filename] = vec
-
+    print (vec.shape)
 pic_name = ""
 while pic_name != "exit":
     pic_name = str(input("Which filename would you like similarities for?\n"))
